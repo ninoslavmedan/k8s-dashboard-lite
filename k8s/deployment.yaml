@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-dashboard-lite
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: k8s-dashboard-lite
+  template:
+    metadata:
+      labels:
+        app: k8s-dashboard-lite
+    spec:
+      serviceAccountName: k8s-dashboard-lite
+      containers:
+      - name: dashboard
+        image: ghcr.io/ninoslavmedan/k8s-dashboard-lite:latest
+        ports:
+        - containerPort: 8080
