@@ -1,0 +1,9 @@
+<h2>Pod Logs</h2>
+
+<pre id="logs"></pre>
+
+<script>
+fetch("/logs/{{ ns }}/{{ pod }}")
+  .then(r => r.text())
+  .then(t => document.getElementById("logs").innerText = t);
+</script>

@@ -1,0 +1,19 @@
+<h2>Deployments ({{ ns }})</h2>
+
+<table border="1">
+  <tr>
+    <th>Name</th>
+    <th>Replicas</th>
+    <th>Actions</th>
+  </tr>
+
+  {% for d in deployments %}
+  <tr>
+    <td>{{ d.metadata.name }}</td>
+    <td>{{ d.status.replicas }}</td>
+    <td>
+      <a href="/yaml/deployment/{{ ns }}/{{ d.metadata.name }}">YAML</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>

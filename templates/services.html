@@ -1,0 +1,21 @@
+<h2>Services ({{ ns }})</h2>
+
+<table border="1">
+  <tr>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Cluster IP</th>
+    <th>Actions</th>
+  </tr>
+
+  {% for s in services %}
+  <tr>
+    <td>{{ s.metadata.name }}</td>
+    <td>{{ s.spec.type }}</td>
+    <td>{{ s.spec.cluster_ip }}</td>
+    <td>
+      <a href="/yaml/service/{{ ns }}/{{ s.metadata.name }}">YAML</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>

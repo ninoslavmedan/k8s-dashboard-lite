@@ -1,22 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Kubernetes Dashboard Lite</title>
-</head>
-<body>
-<h1>Kubernetes Dashboard Lite</h1>
+<h1>Kubernetes Dashboard</h1>
+
+<form method="GET" action="/">
+  <label>Namespace:</label>
+  <select name="ns" onchange="this.form.submit()">
+    {% for n in namespaces %}
+      <option value="{{ n }}" {% if n == selected_ns %}selected{% endif %}>
+        {{ n }}
+      </option>
+    {% endfor %}
+  </select>
+</form>
+
+<hr>
 
 <ul>
-    <li>Namespaces: {{ namespaces }}</li>
-    <li>Nodes: {{ nodes }}</li>
-    <li>Pods: {{ pods }}</li>
-    <li>Deployments: {{ deployments }}</li>
+  <li>Pods: {{ pods }}</li>
+  <li>Deployments: {{ deployments }}</li>
+  <li>Services: {{ services }}</li>
 </ul>
 
-<a href="/pods">Pods</a><br>
-<a href="/deployments">Deployments</a><br>
-<a href="/services">Services</a><br>
-<a href="/nodes">Nodes</a><br>
+<hr>
 
-</body>
-</html>
+<a href="/pods?ns={{ selected_ns }}">Pods</a><br>
+<a href="/deployments?ns={{ selected_ns }}">Deployments</a><br>
+<a href="/services?ns={{ selected_ns }}">Services</a><br>
