@@ -1,13 +1,21 @@
-<!DOCTYPE html>
-<html>
-<body>
+{% extends "base.html" %}
+
+{% block content %}
+
 <h2>Deployments ({{ ns }})</h2>
 
-<ul>
-{% for d in deployments %}
-    <li>{{ d.metadata.name }} - replicas: {{ d.spec.replicas }}</li>
-{% endfor %}
-</ul>
+<table>
+<tr>
+    <th>Name</th>
+    <th>Replicas</th>
+</tr>
 
-</body>
-</html>
+{% for d in deployments %}
+<tr>
+    <td>{{ d.metadata.name }}</td>
+    <td>{{ d.spec.replicas }}</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}

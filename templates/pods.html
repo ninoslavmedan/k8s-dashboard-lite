@@ -1,13 +1,29 @@
-<!DOCTYPE html>
-<html>
-<body>
+{% extends "base.html" %}
+
+{% block content %}
+
 <h2>Pods ({{ ns }})</h2>
 
-<ul>
-{% for p in pods %}
-    <li>{{ p.metadata.name }} - {{ p.status.phase }}</li>
-{% endfor %}
-</ul>
+<form method="get">
+    <input name="ns" value="{{ ns }}" hidden>
+    <input name="search" placeholder="Search pods..." value="{{ search }}">
+    <button type="submit">Search</button>
+</form>
 
-</body>
-</html>
+<table>
+<tr>
+    <th>Name</th>
+    <th>Status</th>
+    <th>Logs</th>
+</tr>
+
+{% for p in pods %}
+<tr>
+    <td>{{ p.metadata.name }}</td>
+    <td>{{ p.status.phase }}</td>
+    <td><a href="/logs/{{ ns }}/{{ p.metadata.name }}">view logs</a></td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}

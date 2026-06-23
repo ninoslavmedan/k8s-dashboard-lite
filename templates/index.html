@@ -1,35 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{ app_name }}</title>
-    <style>
-        body { font-family: Arial; background:#0f172a; color:white; }
-        .box { background:#1e293b; padding:15px; margin:10px; border-radius:10px; }
-        .row { display:flex; gap:10px; }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
 
-<h2>{{ app_name }} - {{ version }}</h2>
+{% block content %}
 
-<div class="box">
-    Namespace: {{ selected_ns }}
+<h2>Cluster Overview</h2>
+
+<div class="card">
+    Namespace:
+    <form method="get">
+        <select name="ns" onchange="this.form.submit()">
+            {% for n in namespaces %}
+                <option value="{{ n }}" {% if n == selected_ns %}selected{% endif %}>
+                    {{ n }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
 </div>
 
-<div class="row">
-    <div class="box">Pods: {{ pods }}</div>
-    <div class="box">Deployments: {{ deployments }}</div>
-    <div class="box">Services: {{ services }}</div>
-</div>
+<div class="card">Pods: {{ pods }}</div>
+<div class="card">Deployments: {{ deployments }}</div>
+<div class="card">Services: {{ services }}</div>
 
-<div class="box">
-    <h3>Namespaces</h3>
-    <ul>
-        {% for ns in namespaces %}
-        <li>{{ ns }}</li>
-        {% endfor %}
-    </ul>
-</div>
-
-</body>
-</html>
+{% endblock %}
