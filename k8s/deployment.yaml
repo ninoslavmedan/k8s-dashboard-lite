@@ -16,6 +16,6 @@ spec:
       serviceAccountName: k8s-dashboard-sa
       containers:
       - name: k8s-dashboard-lite
-        image: ghcr.io/ninoslavmedan/k8s-dashboard-lite:v3.2.1
+        image: ghcr.io/ninoslavmedan/k8s-dashboard-lite:v3.3.0
         ports:
         - containerPort: 8080
