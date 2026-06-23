@@ -4,9 +4,23 @@ metadata:
   name: k8s-dashboard-role
 rules:
 - apiGroups: [""]
-  resources: ["pods", "services", "namespaces", "nodes", "events"]
-  verbs: ["get", "list", "watch"]
+  resources:
+    - pods
+    - pods/log   # 🔥 THIS IS MISSING
+    - services
+    - namespaces
+    - nodes
+    - events
+  verbs:
+    - get
+    - list
+    - watch
 
 - apiGroups: ["apps"]
-  resources: ["deployments", "replicasets"]
-  verbs: ["get", "list", "watch"]
+  resources:
+    - deployments
+    - replicasets
+  verbs:
+    - get
+    - list
+    - watch
