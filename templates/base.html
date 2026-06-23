@@ -12,7 +12,7 @@
         }
 
         .sidebar {
-            width: 220px;
+            width: 240px;
             height: 100vh;
             position: fixed;
             background: #111827;
@@ -20,7 +20,7 @@
         }
 
         .content {
-            margin-left: 240px;
+            margin-left: 260px;
             padding: 20px;
         }
 
@@ -28,7 +28,7 @@
             color: #60a5fa;
             text-decoration: none;
             display: block;
-            padding: 8px 0;
+            padding: 6px 0;
         }
 
         a:hover {
@@ -42,9 +42,10 @@
             border-radius: 8px;
         }
 
-        input, select {
-            padding: 8px;
-            margin: 5px;
+        select, input {
+            padding: 6px;
+            margin-top: 5px;
+            width: 100%;
         }
 
         table {
@@ -62,15 +63,31 @@
 <body>
 
 <div class="sidebar">
+
     <h3>{{ app_name }}</h3>
     <small>{{ version }}</small>
 
     <hr>
 
-    <a href="/">🏠 Dashboard</a>
+    <!-- GLOBAL NAMESPACE SELECTOR -->
+    <form method="get">
+        <label>Namespace</label>
+        <select name="ns" onchange="this.form.submit()">
+            {% for n in namespaces %}
+                <option value="{{ n }}" {% if n == selected_ns %}selected{% endif %}>
+                    {{ n }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    <hr>
+
+    <a href="/?ns={{ selected_ns }}">🏠 Dashboard</a>
     <a href="/pods?ns={{ selected_ns }}">📦 Pods</a>
     <a href="/deployments?ns={{ selected_ns }}">🚀 Deployments</a>
     <a href="/services?ns={{ selected_ns }}">🌐 Services</a>
+
 </div>
 
 <div class="content">

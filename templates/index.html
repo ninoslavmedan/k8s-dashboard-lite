@@ -2,20 +2,7 @@
 
 {% block content %}
 
-<h2>Cluster Overview</h2>
-
-<div class="card">
-    Namespace:
-    <form method="get">
-        <select name="ns" onchange="this.form.submit()">
-            {% for n in namespaces %}
-                <option value="{{ n }}" {% if n == selected_ns %}selected{% endif %}>
-                    {{ n }}
-                </option>
-            {% endfor %}
-        </select>
-    </form>
-</div>
+<h2>Cluster Overview ({{ selected_ns }})</h2>
 
 <div class="card">Pods: {{ pods }}</div>
 <div class="card">Deployments: {{ deployments }}</div>
