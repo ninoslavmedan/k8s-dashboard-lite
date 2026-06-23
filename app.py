@@ -1,143 +1,103 @@
-from flask import Flask, render_template, request, Response
-from kubernetes import client, config
+from flask import Flask, render_template, request, Response, jsonify
 import yaml
-import time
+
+from config import APP_NAME, APP_VERSION
+from k8s_client import K8sClient
 
 app = Flask(__name__)
-
-# ----------------------------
-# LOAD KUBERNETES CONFIG
-# ----------------------------
-try:
-    config.load_incluster_config()
-except:
-    config.load_kube_config()
-
-v1 = client.CoreV1Api()
-apps = client.AppsV1Api()
+k8s = K8sClient()
 
 
-# ----------------------------
-# HELPERS
-# ----------------------------
-def get_namespaces():
-    return [ns.metadata.name for ns in v1.list_namespace().items]
-
-
-def safe(obj):
-    """Convert Kubernetes object to dict safely"""
+def to_yaml(obj):
     return yaml.safe_dump(obj.to_dict(), default_flow_style=False)
 
 
-# ----------------------------
-# DASHBOARD (OVERVIEW)
-# ----------------------------
 @app.route("/")
 def index():
     ns = request.args.get("ns", "default")
 
     return render_template(
         "index.html",
-        namespaces=get_namespaces(),
+        app_name=APP_NAME,
+        version=APP_VERSION,
+        namespaces=k8s.namespaces(),
         selected_ns=ns,
-        pods=len(v1.list_namespaced_pod(ns).items),
-        deployments=len(apps.list_namespaced_deployment(ns).items),
-        services=len(v1.list_namespaced_service(ns).items),
+        pods=len(k8s.pods(ns)),
+        deployments=len(k8s.deployments(ns)),
+        services=len(k8s.services(ns)),
     )
 
 
-# ----------------------------
-# POD LIST (FILTERED)
-# ----------------------------
 @app.route("/pods")
 def pods():
     ns = request.args.get("ns", "default")
     search = request.args.get("search", "")
 
-    items = v1.list_namespaced_pod(ns).items
+    items = k8s.pods(ns)
 
     if search:
         items = [p for p in items if search.lower() in p.metadata.name.lower()]
 
-    return render_template("pods.html", pods=items, ns=ns, search=search)
+    return render_template("pods.html", pods=items, ns=ns)
 
 
-# ----------------------------
-# DEPLOYMENTS
-# ----------------------------
 @app.route("/deployments")
 def deployments():
     ns = request.args.get("ns", "default")
-    items = apps.list_namespaced_deployment(ns).items
-
-    return render_template("deployments.html", deployments=items, ns=ns)
+    return render_template("deployments.html", deployments=k8s.deployments(ns), ns=ns)
 
 
-# ----------------------------
-# SERVICES
-# ----------------------------
 @app.route("/services")
 def services():
     ns = request.args.get("ns", "default")
-    items = v1.list_namespaced_service(ns).items
-
-    return render_template("services.html", services=items, ns=ns)
+    return render_template("services.html", services=k8s.services(ns), ns=ns)
 
 
-# ----------------------------
-# YAML VIEWER (ANY OBJECT)
-# ----------------------------
 @app.route("/yaml/<kind>/<ns>/<name>")
 def yaml_view(kind, ns, name):
 
-    obj = None
-
     if kind == "pod":
-        obj = v1.read_namespaced_pod(name, ns)
-
+        obj = k8s.v1.read_namespaced_pod(name, ns)
     elif kind == "deployment":
-        obj = apps.read_namespaced_deployment(name, ns)
-
+        obj = k8s.apps.read_namespaced_deployment(name, ns)
     elif kind == "service":
-        obj = v1.read_namespaced_service(name, ns)
-
+        obj = k8s.v1.read_namespaced_service(name, ns)
     else:
         return "Unsupported kind", 400
 
-    return Response(safe(obj), mimetype="text/plain")
+    return Response(to_yaml(obj), mimetype="text/plain")
 
 
-# ----------------------------
-# POD LOG STREAM (SIMPLE STREAMING)
-# ----------------------------
 @app.route("/logs/<ns>/<pod>")
 def logs(ns, pod):
 
-    def stream_logs():
+    def stream():
         try:
-            for line in v1.read_namespaced_pod_log(
-                name=pod,
-                namespace=ns,
-                follow=True,
-                _preload_content=False
-            ).stream():
-                yield line.decode("utf-8")
+            for line in k8s.pod_logs(ns, pod):
+                yield line
         except Exception as e:
             yield f"\n[ERROR] {str(e)}\n"
 
-    return Response(stream_logs(), mimetype="text/plain")
+    return Response(stream(), mimetype="text/plain")
 
 
-# ----------------------------
-# HEALTH CHECK
-# ----------------------------
+@app.route("/api/summary")
+def summary():
+    ns = request.args.get("ns", "default")
+
+    return jsonify({
+        "namespace": ns,
+        "pods": len(k8s.pods(ns)),
+        "deployments": len(k8s.deployments(ns)),
+        "services": len(k8s.services(ns)),
+        "version": APP_VERSION
+    })
+
+
 @app.route("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "version": APP_VERSION}
 
 
-# ----------------------------
-# RUN (DEV ONLY - REMOVE IN PROD IMAGE)
-# ----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)

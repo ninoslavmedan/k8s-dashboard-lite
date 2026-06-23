@@ -1,28 +1,13 @@
-<h2>Pods (namespace: {{ ns }})</h2>
+<!DOCTYPE html>
+<html>
+<body>
+<h2>Pods ({{ ns }})</h2>
 
-<form method="GET">
-  <input name="search" placeholder="Search pods..." value="{{ search }}">
-  <input type="hidden" name="ns" value="{{ ns }}">
-  <button type="submit">Search</button>
-</form>
+<ul>
+{% for p in pods %}
+    <li>{{ p.metadata.name }} - {{ p.status.phase }}</li>
+{% endfor %}
+</ul>
 
-<hr>
-
-<table border="1">
-  <tr>
-    <th>Name</th>
-    <th>Status</th>
-    <th>Actions</th>
-  </tr>
-
-  {% for p in pods %}
-  <tr>
-    <td>{{ p.metadata.name }}</td>
-    <td>{{ p.status.phase }}</td>
-    <td>
-      <a href="/yaml/pod/{{ ns }}/{{ p.metadata.name }}">YAML</a> |
-      <a href="/logs/{{ ns }}/{{ p.metadata.name }}">Logs</a>
-    </td>
-  </tr>
-  {% endfor %}
-</table>
+</body>
+</html>
