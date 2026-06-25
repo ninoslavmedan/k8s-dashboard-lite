@@ -1,52 +1,10 @@
-{% extends "base.html" %}
-
-{% block content %}
-
-<h1 style="margin-bottom:20px;">Pods</h1>
-
-<div class="table-card">
-
-<form method="get" style="margin-bottom:20px;">
-    <input type="hidden" name="ns" value="{{ selected_ns }}">
-    <input type="text"
-           name="search"
-           placeholder="Search Pod"
-           value="{{ search }}">
-</form>
-
-<table>
-
-<tr>
-    <th>Name</th>
-    <th>Status</th>
-    <th>Logs</th>
-</tr>
-
-{% for p in pods %}
-<tr>
-    <td>{{ p.metadata.name }}</td>
-
-    <td>
-        {% if p.status.phase == "Running" %}
-            <span class="status-running">
-                {{ p.status.phase }}
-            </span>
-        {% else %}
-            {{ p.status.phase }}
-        {% endif %}
-    </td>
-
-    <td>
-        <a class="btn"
-           href="/logs/{{ selected_ns }}/{{ p.metadata.name }}">
-            Logs
-        </a>
-    </td>
-</tr>
-{% endfor %}
-
-</table>
-
-</div>
-
-{% endblock %}
+{% extends 'base.html' %}{% block content %}
+<h1>Pods</h1><div class='table-card'>
+<form method='get'><input type='hidden' name='ns' value='{{ selected_ns }}'><input name='search' value='{{ search }}' placeholder='Search pods'></form>
+<table><tr><th>Name</th><th>Status</th><th>Logs</th></tr>
+{% for p in pods %}<tr><td>{{ p.metadata.name }}</td><td>
+{% if p.status.phase=='Running' %}<span class='badge run'>Running</span>
+{% elif p.status.phase=='Pending' %}<span class='badge pend'>Pending</span>
+{% else %}<span class='badge fail'>{{ p.status.phase }}</span>{% endif %}
+</td><td><a class='btn' href='/logs/{{ selected_ns }}/{{ p.metadata.name }}'><i class='fa-solid fa-file-lines'></i> Logs</a></td></tr>{% endfor %}
+</table></div>{% endblock %}

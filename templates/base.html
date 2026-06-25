@@ -3,208 +3,51 @@
 <head>
 <meta charset="utf-8">
 <title>{{ app_name }} {{ version }}</title>
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-
-:root {
-    --sidebar-bg:#132835;
-    --sidebar-hover:#1f3d4f;
-    --accent:#00b8d4;
-    --page-bg:#eef3f7;
-    --card-bg:#ffffff;
-    --text:#2f3e4d;
-    --muted:#7c8b99;
-    --border:#dde5ec;
-}
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-body{
-    font-family:Segoe UI, Arial, sans-serif;
-    background:var(--page-bg);
-    color:var(--text);
-}
-
-.sidebar{
-    position:fixed;
-    left:0;
-    top:0;
-    width:260px;
-    height:100%;
-    background:var(--sidebar-bg);
-    color:white;
-}
-
-.logo{
-    padding:25px;
-}
-
-.logo h2{
-    margin-bottom:5px;
-}
-
-.logo small{
-    color:#9fb5c3;
-}
-
-.menu{
-    margin-top:30px;
-}
-
-.menu a{
-    display:block;
-    padding:15px 25px;
-    color:#dbe7ef;
-    text-decoration:none;
-    border-left:4px solid transparent;
-}
-
-.menu a:hover{
-    background:var(--sidebar-hover);
-    border-left:4px solid var(--accent);
-}
-
-.content{
-    margin-left:260px;
-    padding:30px;
-}
-
-.topbar{
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    box-shadow:0 1px 6px rgba(0,0,0,.08);
-    margin-bottom:20px;
-}
-
-.namespace-form{
-    display:flex;
-    gap:10px;
-    align-items:center;
-}
-
-select,input{
-    padding:10px;
-    border:1px solid var(--border);
-    border-radius:6px;
-}
-
-.card-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:20px;
-}
-
-.card{
-    background:white;
-    border-radius:10px;
-    padding:25px;
-    box-shadow:0 1px 6px rgba(0,0,0,.08);
-}
-
-.card h3{
-    color:var(--muted);
-    margin-bottom:10px;
-}
-
-.metric{
-    font-size:36px;
-    font-weight:bold;
-    color:var(--accent);
-}
-
-.table-card{
-    background:white;
-    border-radius:10px;
-    padding:20px;
-    box-shadow:0 1px 6px rgba(0,0,0,.08);
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-th{
-    text-align:left;
-    color:var(--muted);
-    padding:15px;
-    border-bottom:1px solid var(--border);
-}
-
-td{
-    padding:15px;
-    border-bottom:1px solid var(--border);
-}
-
-.btn{
-    background:var(--accent);
-    color:white;
-    padding:8px 15px;
-    border-radius:5px;
-    text-decoration:none;
-}
-
-.btn:hover{
-    opacity:.9;
-}
-
-.status-running{
-    color:#00a65a;
-    font-weight:bold;
-}
-
-.status-failed{
-    color:red;
-    font-weight:bold;
-}
-
+:root{--sidebar:#132835;--hover:#1f3d4f;--accent:#00b8d4;--bg:#eef3f7;--card:#fff;--text:#2f3e4d;--muted:#7c8b99;--border:#dde5ec;}
+*{box-sizing:border-box} body{margin:0;font-family:Segoe UI,Arial;background:var(--bg);color:var(--text)}
+.sidebar{position:fixed;left:0;top:0;width:260px;height:100%;background:var(--sidebar);color:white}
+.logo{padding:24px}.version{background:var(--accent);padding:4px 10px;border-radius:20px;font-size:12px}
+.menu a{display:block;padding:14px 24px;color:#dbe7ef;text-decoration:none}
+.menu a:hover{background:var(--hover);border-left:4px solid var(--accent)}
+.menu i{width:24px}.content{margin-left:260px;padding:24px}
+.topbar,.card,.table-card{background:white;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.08)}
+.topbar{padding:16px;margin-bottom:20px}.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.card{padding:20px}.metric{font-size:34px;font-weight:bold;color:var(--accent)}
+.card-icon{font-size:30px;color:var(--accent);margin-bottom:10px}
+.table-card{padding:18px} table{width:100%;border-collapse:collapse}
+th,td{padding:12px;border-bottom:1px solid var(--border);text-align:left}
+th{background:#f7fafc}.badge{padding:4px 10px;border-radius:20px;font-size:12px}
+.run{background:#dff7ea;color:#008d4c}.pend{background:#fff4d8;color:#cc8a00}.fail{background:#ffe1e1;color:#c62828}
+.btn{background:var(--accent);color:white;padding:8px 12px;border-radius:5px;text-decoration:none}
 </style>
 </head>
-
 <body>
-
 <div class="sidebar">
-
-    <div class="logo">
-        <h2>{{ app_name }}</h2>
-        <small>{{ version }}</small>
-    </div>
-
-    <div class="menu">
-        <a href="/?ns={{ selected_ns }}">Overview</a>
-        <a href="/pods?ns={{ selected_ns }}">Pods</a>
-        <a href="/deployments?ns={{ selected_ns }}">Deployments</a>
-        <a href="/services?ns={{ selected_ns }}">Services</a>
-    </div>
-
+<div class="logo">
+<h2><i class="fa-solid fa-cubes"></i> {{ app_name }}</h2>
+<span class="version">{{ version }}</span>
 </div>
-
+<div class="menu">
+<a href="/?ns={{ selected_ns }}"><i class="fa-solid fa-chart-line"></i> Overview</a>
+<a href="/pods?ns={{ selected_ns }}"><i class="fa-solid fa-cube"></i> Pods</a>
+<a href="/deployments?ns={{ selected_ns }}"><i class="fa-solid fa-rocket"></i> Deployments</a>
+<a href="/services?ns={{ selected_ns }}"><i class="fa-solid fa-network-wired"></i> Services</a>
+</div>
+</div>
 <div class="content">
-
-    <div class="topbar">
-        <form method="get" class="namespace-form">
-            <label><strong>Namespace</strong></label>
-
-            <select name="ns" onchange="this.form.submit()">
-                {% for n in namespaces %}
-                <option value="{{ n }}"
-                    {% if n == selected_ns %}selected{% endif %}>
-                    {{ n }}
-                </option>
-                {% endfor %}
-            </select>
-        </form>
-    </div>
-
-    {% block content %}
-    {% endblock %}
-
+<div class="topbar">
+<form method="get">
+<i class="fa-solid fa-layer-group"></i>
+<select name="ns" onchange="this.form.submit()">
+{% for n in namespaces %}
+<option value="{{ n }}" {% if n==selected_ns %}selected{% endif %}>{{ n }}</option>
+{% endfor %}
+</select>
+</form>
 </div>
-
+{% block content %}{% endblock %}
+</div>
 </body>
 </html>

@@ -1,27 +1,4 @@
-{% extends "base.html" %}
-
-{% block content %}
-
-<h1 style="margin-bottom:20px;">Services</h1>
-
-<div class="table-card">
-
-<table>
-
-<tr>
-    <th>Name</th>
-    <th>Type</th>
-</tr>
-
-{% for s in services %}
-<tr>
-    <td>{{ s.metadata.name }}</td>
-    <td>{{ s.spec.type }}</td>
-</tr>
-{% endfor %}
-
-</table>
-
-</div>
-
-{% endblock %}
+{% extends 'base.html' %}{% block content %}
+<h1>Services</h1><div class='table-card'><table><tr><th>Name</th><th>Type</th></tr>
+{% for s in services %}<tr><td>{{ s.metadata.name }}</td><td>{{ s.spec.type }}</td></tr>{% endfor %}
+</table></div>{% endblock %}
