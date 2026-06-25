@@ -2,10 +2,25 @@
 
 {% block content %}
 
-<h2>Cluster Overview ({{ selected_ns }})</h2>
+<h1 style="margin-bottom:20px;">Cluster Overview</h1>
 
-<div class="card">Pods: {{ pods }}</div>
-<div class="card">Deployments: {{ deployments }}</div>
-<div class="card">Services: {{ services }}</div>
+<div class="card-grid">
+
+    <div class="card">
+        <h3>Pods</h3>
+        <div class="metric">{{ pods }}</div>
+    </div>
+
+    <div class="card">
+        <h3>Deployments</h3>
+        <div class="metric">{{ deployments }}</div>
+    </div>
+
+    <div class="card">
+        <h3>Services</h3>
+        <div class="metric">{{ services }}</div>
+    </div>
+
+</div>
 
 {% endblock %}

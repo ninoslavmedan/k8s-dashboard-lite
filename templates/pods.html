@@ -2,15 +2,20 @@
 
 {% block content %}
 
-<h2>Pods ({{ selected_ns }})</h2>
+<h1 style="margin-bottom:20px;">Pods</h1>
 
-<form method="get">
-    <input name="ns" value="{{ selected_ns }}" type="hidden">
-    <input name="search" placeholder="Search pods..." value="{{ search }}">
-    <button type="submit">Search</button>
+<div class="table-card">
+
+<form method="get" style="margin-bottom:20px;">
+    <input type="hidden" name="ns" value="{{ selected_ns }}">
+    <input type="text"
+           name="search"
+           placeholder="Search Pod"
+           value="{{ search }}">
 </form>
 
 <table>
+
 <tr>
     <th>Name</th>
     <th>Status</th>
@@ -20,10 +25,28 @@
 {% for p in pods %}
 <tr>
     <td>{{ p.metadata.name }}</td>
-    <td>{{ p.status.phase }}</td>
-    <td><a href="/logs/{{ selected_ns }}/{{ p.metadata.name }}">logs</a></td>
+
+    <td>
+        {% if p.status.phase == "Running" %}
+            <span class="status-running">
+                {{ p.status.phase }}
+            </span>
+        {% else %}
+            {{ p.status.phase }}
+        {% endif %}
+    </td>
+
+    <td>
+        <a class="btn"
+           href="/logs/{{ selected_ns }}/{{ p.metadata.name }}">
+            Logs
+        </a>
+    </td>
 </tr>
 {% endfor %}
+
 </table>
+
+</div>
 
 {% endblock %}

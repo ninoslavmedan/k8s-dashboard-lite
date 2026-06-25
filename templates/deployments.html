@@ -2,9 +2,12 @@
 
 {% block content %}
 
-<h2>Deployments ({{ selected_ns }})</h2>
+<h1 style="margin-bottom:20px;">Deployments</h1>
+
+<div class="table-card">
 
 <table>
+
 <tr>
     <th>Name</th>
     <th>Replicas</th>
@@ -16,6 +19,9 @@
     <td>{{ d.spec.replicas }}</td>
 </tr>
 {% endfor %}
+
 </table>
+
+</div>
 
 {% endblock %}

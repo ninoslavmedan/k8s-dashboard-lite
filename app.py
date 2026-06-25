@@ -5,7 +5,7 @@ import yaml
 app = Flask(__name__)
 
 APP_NAME = "k8s-dashboard-lite"
-VERSION = "v3.3.0"
+VERSION = "v3.3.1"
 
 # ----------------------------
 # K8S CONFIG

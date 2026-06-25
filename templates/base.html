@@ -1,97 +1,209 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{ app_name }} - {{ version }}</title>
+<meta charset="utf-8">
+<title>{{ app_name }} {{ version }}</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial;
-            background: #0f172a;
-            color: white;
-        }
+<style>
 
-        .sidebar {
-            width: 240px;
-            height: 100vh;
-            position: fixed;
-            background: #111827;
-            padding: 15px;
-        }
+:root {
+    --sidebar-bg:#132835;
+    --sidebar-hover:#1f3d4f;
+    --accent:#00b8d4;
+    --page-bg:#eef3f7;
+    --card-bg:#ffffff;
+    --text:#2f3e4d;
+    --muted:#7c8b99;
+    --border:#dde5ec;
+}
 
-        .content {
-            margin-left: 260px;
-            padding: 20px;
-        }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-        a {
-            color: #60a5fa;
-            text-decoration: none;
-            display: block;
-            padding: 6px 0;
-        }
+body{
+    font-family:Segoe UI, Arial, sans-serif;
+    background:var(--page-bg);
+    color:var(--text);
+}
 
-        a:hover {
-            color: white;
-        }
+.sidebar{
+    position:fixed;
+    left:0;
+    top:0;
+    width:260px;
+    height:100%;
+    background:var(--sidebar-bg);
+    color:white;
+}
 
-        .card {
-            background: #1e293b;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 8px;
-        }
+.logo{
+    padding:25px;
+}
 
-        select, input {
-            padding: 6px;
-            margin-top: 5px;
-            width: 100%;
-        }
+.logo h2{
+    margin-bottom:5px;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+.logo small{
+    color:#9fb5c3;
+}
 
-        td, th {
-            padding: 10px;
-            border-bottom: 1px solid #334155;
-        }
-    </style>
+.menu{
+    margin-top:30px;
+}
+
+.menu a{
+    display:block;
+    padding:15px 25px;
+    color:#dbe7ef;
+    text-decoration:none;
+    border-left:4px solid transparent;
+}
+
+.menu a:hover{
+    background:var(--sidebar-hover);
+    border-left:4px solid var(--accent);
+}
+
+.content{
+    margin-left:260px;
+    padding:30px;
+}
+
+.topbar{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 1px 6px rgba(0,0,0,.08);
+    margin-bottom:20px;
+}
+
+.namespace-form{
+    display:flex;
+    gap:10px;
+    align-items:center;
+}
+
+select,input{
+    padding:10px;
+    border:1px solid var(--border);
+    border-radius:6px;
+}
+
+.card-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:white;
+    border-radius:10px;
+    padding:25px;
+    box-shadow:0 1px 6px rgba(0,0,0,.08);
+}
+
+.card h3{
+    color:var(--muted);
+    margin-bottom:10px;
+}
+
+.metric{
+    font-size:36px;
+    font-weight:bold;
+    color:var(--accent);
+}
+
+.table-card{
+    background:white;
+    border-radius:10px;
+    padding:20px;
+    box-shadow:0 1px 6px rgba(0,0,0,.08);
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    text-align:left;
+    color:var(--muted);
+    padding:15px;
+    border-bottom:1px solid var(--border);
+}
+
+td{
+    padding:15px;
+    border-bottom:1px solid var(--border);
+}
+
+.btn{
+    background:var(--accent);
+    color:white;
+    padding:8px 15px;
+    border-radius:5px;
+    text-decoration:none;
+}
+
+.btn:hover{
+    opacity:.9;
+}
+
+.status-running{
+    color:#00a65a;
+    font-weight:bold;
+}
+
+.status-failed{
+    color:red;
+    font-weight:bold;
+}
+
+</style>
 </head>
 
 <body>
 
 <div class="sidebar">
 
-    <h3>{{ app_name }}</h3>
-    <small>{{ version }}</small>
+    <div class="logo">
+        <h2>{{ app_name }}</h2>
+        <small>{{ version }}</small>
+    </div>
 
-    <hr>
-
-    <!-- GLOBAL NAMESPACE SELECTOR -->
-    <form method="get">
-        <label>Namespace</label>
-        <select name="ns" onchange="this.form.submit()">
-            {% for n in namespaces %}
-                <option value="{{ n }}" {% if n == selected_ns %}selected{% endif %}>
-                    {{ n }}
-                </option>
-            {% endfor %}
-        </select>
-    </form>
-
-    <hr>
-
-    <a href="/?ns={{ selected_ns }}">🏠 Dashboard</a>
-    <a href="/pods?ns={{ selected_ns }}">📦 Pods</a>
-    <a href="/deployments?ns={{ selected_ns }}">🚀 Deployments</a>
-    <a href="/services?ns={{ selected_ns }}">🌐 Services</a>
+    <div class="menu">
+        <a href="/?ns={{ selected_ns }}">Overview</a>
+        <a href="/pods?ns={{ selected_ns }}">Pods</a>
+        <a href="/deployments?ns={{ selected_ns }}">Deployments</a>
+        <a href="/services?ns={{ selected_ns }}">Services</a>
+    </div>
 
 </div>
 
 <div class="content">
-    {% block content %}{% endblock %}
+
+    <div class="topbar">
+        <form method="get" class="namespace-form">
+            <label><strong>Namespace</strong></label>
+
+            <select name="ns" onchange="this.form.submit()">
+                {% for n in namespaces %}
+                <option value="{{ n }}"
+                    {% if n == selected_ns %}selected{% endif %}>
+                    {{ n }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    {% block content %}
+    {% endblock %}
+
 </div>
 
 </body>
