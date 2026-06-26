@@ -4,7 +4,7 @@ metadata:
   name: k8s-dashboard-lite
   namespace: k8s-dashboard
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: k8s-dashboard-lite
