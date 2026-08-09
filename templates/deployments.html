@@ -1,27 +1,21 @@
-{% extends "base.html" %}
-
-{% block content %}
-
-<h1 style="margin-bottom:20px;">Deployments</h1>
-
-<div class="table-card">
-
-<table>
-
-<tr>
-    <th>Name</th>
-    <th>Replicas</th>
-</tr>
-
-{% for d in deployments %}
-<tr>
-    <td>{{ d.metadata.name }}</td>
-    <td>{{ d.spec.replicas }}</td>
-</tr>
-{% endfor %}
-
-</table>
-
-</div>
-
-{% endblock %}
+{% extends 'base.html' %}{% block content %}
+<h1>Deployments <span style="font-size:15px;color:var(--muted)">— {{ selected_ns }}</span></h1>
+<div class='table-card'>
+{% if deployments %}
+<table class="sortable"><thead><tr>
+<th>Name</th><th>Ready</th><th>Desired</th><th>Available</th><th>Updated</th><th>Status</th><th>Image</th><th>Age</th><th>YAML</th>
+</tr></thead><tbody>
+{% for d in deployments %}<tr>
+<td>{{ d.name }}</td>
+<td class="mono">{{ d.ready }}/{{ d.desired }}</td>
+<td class="mono">{{ d.desired }}</td>
+<td class="mono">{{ d.available }}</td>
+<td class="mono">{{ d.updated }}</td>
+<td>{% if d.healthy %}<span class="badge run">Healthy</span>{% else %}<span class="badge pend">Progressing</span>{% endif %}</td>
+<td class="mono">{{ d.images|join(', ') }}</td>
+<td class="mono">{{ d.age }}</td>
+<td><a class='btn ghost' href='/yaml/deployment/{{ selected_ns }}/{{ d.name }}' target="_blank"><i class="fa-solid fa-code"></i></a></td>
+</tr>{% endfor %}
+</tbody></table>
+{% else %}<div class="empty"><i class="fa-solid fa-inbox" style="font-size:28px"></i><p>No deployments in <b>{{ selected_ns }}</b>.</p></div>{% endif %}
+</div>{% endblock %}

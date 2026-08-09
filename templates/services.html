@@ -1,4 +1,19 @@
 {% extends 'base.html' %}{% block content %}
-<h1>Services</h1><div class='table-card'><table><tr><th>Name</th><th>Type</th></tr>
-{% for s in services %}<tr><td>{{ s.metadata.name }}</td><td>{{ s.spec.type }}</td></tr>{% endfor %}
-</table></div>{% endblock %}
+<h1>Services <span style="font-size:15px;color:var(--muted)">— {{ selected_ns }}</span></h1>
+<div class='table-card'>
+{% if services %}
+<table class="sortable"><thead><tr>
+<th>Name</th><th>Type</th><th>Cluster IP</th><th>Ports</th><th>Selector</th><th>Age</th><th>YAML</th>
+</tr></thead><tbody>
+{% for s in services %}<tr>
+<td>{{ s.name }}</td>
+<td><span class="badge run">{{ s.type }}</span></td>
+<td class="mono">{{ s.cluster_ip }}</td>
+<td class="mono">{{ s.ports }}</td>
+<td class="mono">{{ s.selector }}</td>
+<td class="mono">{{ s.age }}</td>
+<td><a class='btn ghost' href='/yaml/service/{{ selected_ns }}/{{ s.name }}' target="_blank"><i class="fa-solid fa-code"></i></a></td>
+</tr>{% endfor %}
+</tbody></table>
+{% else %}<div class="empty"><i class="fa-solid fa-inbox" style="font-size:28px"></i><p>No services in <b>{{ selected_ns }}</b>.</p></div>{% endif %}
+</div>{% endblock %}

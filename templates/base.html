@@ -2,33 +2,63 @@
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ app_name }} {{ version }}</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-:root{--sidebar:#132835;--hover:#1f3d4f;--accent:#00b8d4;--bg:#eef3f7;--card:#fff;--text:#2f3e4d;--muted:#7c8b99;--border:#dde5ec;}
-*{box-sizing:border-box} body{margin:0;font-family:Segoe UI,Arial;background:var(--bg);color:var(--text)}
-.sidebar{position:fixed;left:0;top:0;width:260px;height:100%;background:var(--sidebar);color:white}
-.logo{padding:24px}.version{background:var(--accent);padding:4px 10px;border-radius:20px;font-size:12px}
-.menu a{display:block;padding:14px 24px;color:#dbe7ef;text-decoration:none}
-.menu a:hover{background:var(--hover);border-left:4px solid var(--accent)}
-.menu i{width:24px}.content{margin-left:260px;padding:24px}
-.topbar,.card,.table-card{background:white;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.08)}
-.topbar{padding:16px;margin-bottom:20px}.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
-.card{padding:20px}.metric{font-size:34px;font-weight:bold;color:var(--accent)}
-.card-icon{font-size:30px;color:var(--accent);margin-bottom:10px}
-.table-card{padding:18px} table{width:100%;border-collapse:collapse}
-th,td{padding:12px;border-bottom:1px solid var(--border);text-align:left}
-th{background:#f7fafc}.badge{padding:4px 10px;border-radius:20px;font-size:12px}
-.run{background:#dff7ea;color:#008d4c}.pend{background:#fff4d8;color:#cc8a00}.fail{background:#ffe1e1;color:#c62828}
-.btn{background:var(--accent);color:white;padding:8px 12px;border-radius:5px;text-decoration:none}
+:root{--sidebar:#0f2430;--sidebar2:#132835;--hover:#1f3d4f;--accent:#00b8d4;--accent2:#22d3a8;--bg:#eef3f7;--card:#fff;--text:#2f3e4d;--muted:#7c8b99;--border:#dde5ec;--ok:#008d4c;--okbg:#dff7ea;--warn:#cc8a00;--warnbg:#fff4d8;--fail:#c62828;--failbg:#ffe1e1;}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text)}
+.sidebar{position:fixed;left:0;top:0;width:260px;height:100%;background:linear-gradient(180deg,var(--sidebar),var(--sidebar2));color:#fff;box-shadow:2px 0 12px rgba(0,0,0,.12)}
+.logo{padding:24px 24px 16px}
+.logo h2{margin:0 0 8px;font-size:19px;display:flex;align-items:center;gap:10px}
+.version{background:var(--accent);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.menu{margin-top:10px}
+.menu a{display:flex;align-items:center;gap:12px;padding:13px 24px;color:#c9dbe6;text-decoration:none;border-left:4px solid transparent;transition:.15s}
+.menu a:hover{background:var(--hover);border-left-color:var(--accent);color:#fff}
+.menu i{width:20px;text-align:center}
+.content{margin-left:260px;padding:24px}
+.topbar{background:#fff;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.08);padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.topbar select{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:#fff}
+.chip{margin-left:auto;font-size:13px;color:var(--muted)}
+h1{font-size:24px;margin:4px 0 20px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-bottom:22px}
+.card{background:#fff;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.08);padding:22px;position:relative;overflow:hidden}
+.card:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+.card-icon{font-size:26px;color:var(--accent);margin-bottom:10px}
+.metric{font-size:36px;font-weight:700;color:var(--text);line-height:1}
+.card .label{color:var(--muted);margin-top:6px;font-size:14px}
+.card.ok:before{background:var(--ok)} .card.warn:before{background:var(--warn)} .card.fail:before{background:var(--fail)}
+.card.ok .card-icon{color:var(--ok)} .card.warn .card-icon{color:var(--warn)} .card.fail .card-icon{color:var(--fail)}
+.grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-bottom:22px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.panel{background:#fff;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.08);padding:20px}
+.panel h3{margin:0 0 14px;font-size:16px}
+.table-card{background:#fff;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.08);padding:18px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:12px;border-bottom:1px solid var(--border);text-align:left;font-size:14px}
+th{background:#f7fafc;color:var(--muted);font-weight:600;cursor:pointer;user-select:none}
+th:hover{color:var(--text)}
+tr:hover td{background:#fafcfe}
+.badge{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;display:inline-block}
+.run{background:var(--okbg);color:var(--ok)} .pend{background:var(--warnbg);color:var(--warn)} .fail{background:var(--failbg);color:var(--fail)}
+.mono{font-family:'Consolas',monospace;font-size:13px;color:var(--muted)}
+.rst{font-weight:600} .rst.hot{color:var(--fail)}
+.btn{background:var(--accent);color:#fff;padding:7px 12px;border-radius:6px;text-decoration:none;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:#eef3f7;color:var(--text)}
+.searchbar{margin-bottom:14px}
+.searchbar input{padding:9px 12px;border:1px solid var(--border);border-radius:8px;width:280px;font-size:14px}
+.err{background:var(--failbg);color:var(--fail);padding:12px 16px;border-radius:8px;margin-bottom:18px;font-size:14px;display:flex;align-items:center;gap:8px}
+.empty{text-align:center;color:var(--muted);padding:36px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:13px}
+.legend span{display:flex;align-items:center;gap:6px}
+.dot{width:11px;height:11px;border-radius:50%;display:inline-block}
 </style>
 </head>
 <body>
 <div class="sidebar">
-<div class="logo">
-<h2><i class="fa-solid fa-cubes"></i> {{ app_name }}</h2>
-<span class="version">{{ version }}</span>
-</div>
+<div class="logo"><h2><i class="fa-solid fa-cubes"></i> {{ app_name }}</h2><span class="version">{{ version }}</span></div>
 <div class="menu">
 <a href="/?ns={{ selected_ns }}"><i class="fa-solid fa-chart-line"></i> Overview</a>
 <a href="/pods?ns={{ selected_ns }}"><i class="fa-solid fa-cube"></i> Pods</a>
@@ -38,16 +68,36 @@ th{background:#f7fafc}.badge{padding:4px 10px;border-radius:20px;font-size:12px}
 </div>
 <div class="content">
 <div class="topbar">
-<form method="get">
-<i class="fa-solid fa-layer-group"></i>
+<form method="get" style="display:flex;align-items:center;gap:10px;margin:0">
+<i class="fa-solid fa-layer-group" style="color:var(--accent)"></i>
 <select name="ns" onchange="this.form.submit()">
-{% for n in namespaces %}
-<option value="{{ n }}" {% if n==selected_ns %}selected{% endif %}>{{ n }}</option>
-{% endfor %}
+{% for n in namespaces %}<option value="{{ n }}" {% if n==selected_ns %}selected{% endif %}>{{ n }}</option>{% endfor %}
 </select>
 </form>
+<span class="chip"><i class="fa-regular fa-clock"></i> auto-refresh 15s</span>
 </div>
+{% if error %}<div class="err"><i class="fa-solid fa-triangle-exclamation"></i> Cluster API error: {{ error }}</div>{% endif %}
 {% block content %}{% endblock %}
 </div>
+<script>
+// sortable tables
+document.querySelectorAll('table.sortable').forEach(function(t){
+  t.querySelectorAll('th').forEach(function(th,i){
+    th.addEventListener('click',function(){
+      var rows=Array.from(t.tBodies[0].rows);
+      var asc=!(th.dataset.asc==='true'); th.dataset.asc=asc;
+      rows.sort(function(a,b){
+        var x=a.cells[i].innerText.trim(), y=b.cells[i].innerText.trim();
+        var nx=parseFloat(x), ny=parseFloat(y);
+        if(!isNaN(nx)&&!isNaN(ny)){return asc?nx-ny:ny-nx;}
+        return asc?x.localeCompare(y):y.localeCompare(x);
+      });
+      rows.forEach(function(r){t.tBodies[0].appendChild(r);});
+    });
+  });
+});
+// auto-refresh (pause when a log window is open elsewhere is out of scope)
+setTimeout(function(){location.reload();}, 15000);
+</script>
 </body>
 </html>

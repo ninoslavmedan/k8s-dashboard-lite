@@ -1,7 +1,39 @@
 {% extends 'base.html' %}{% block content %}
-<h1>Cluster Overview</h1>
+<h1>Cluster Overview <span style="font-size:15px;color:var(--muted)">— {{ selected_ns }}</span></h1>
 <div class='card-grid'>
-<div class='card'><div class='card-icon'><i class='fa-solid fa-cube'></i></div><div class='metric'>{{ pods }}</div><div>Pods</div></div>
-<div class='card'><div class='card-icon'><i class='fa-solid fa-rocket'></i></div><div class='metric'>{{ deployments }}</div><div>Deployments</div></div>
-<div class='card'><div class='card-icon'><i class='fa-solid fa-network-wired'></i></div><div class='metric'>{{ services }}</div><div>Services</div></div>
-</div>{% endblock %}
+  <div class='card'><div class='card-icon'><i class='fa-solid fa-cube'></i></div><div class='metric'>{{ pods }}</div><div class='label'>Pods</div></div>
+  <div class='card'><div class='card-icon'><i class='fa-solid fa-rocket'></i></div><div class='metric'>{{ deployments }}</div><div class='label'>Deployments</div></div>
+  <div class='card'><div class='card-icon'><i class='fa-solid fa-network-wired'></i></div><div class='metric'>{{ services }}</div><div class='label'>Services</div></div>
+  <div class='card {% if restarts>0 %}warn{% endif %}'><div class='card-icon'><i class='fa-solid fa-rotate-right'></i></div><div class='metric'>{{ restarts }}</div><div class='label'>Total Restarts</div></div>
+</div>
+<div class='grid2'>
+  <div class='panel'>
+    <h3><i class="fa-solid fa-chart-pie" style="color:var(--accent)"></i> Pod Status Breakdown</h3>
+    <canvas id="statusChart" height="150"></canvas>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--ok)"></i> Running ({{ running }})</span>
+      <span><i class="dot" style="background:var(--warn)"></i> Pending ({{ pending }})</span>
+      <span><i class="dot" style="background:var(--fail)"></i> Failed/Other ({{ failed }})</span>
+    </div>
+  </div>
+  <div class='panel'>
+    <h3><i class="fa-solid fa-heart-pulse" style="color:var(--accent)"></i> Health Summary</h3>
+    <table>
+      <tr><td><span class="badge run">Running</span></td><td class="metric" style="font-size:22px">{{ running }}</td></tr>
+      <tr><td><span class="badge pend">Pending</span></td><td class="metric" style="font-size:22px">{{ pending }}</td></tr>
+      <tr><td><span class="badge fail">Failed / Other</span></td><td class="metric" style="font-size:22px">{{ failed }}</td></tr>
+      <tr><td>Restarts (all pods)</td><td class="metric" style="font-size:22px;{% if restarts>0 %}color:var(--warn){% endif %}">{{ restarts }}</td></tr>
+    </table>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+new Chart(document.getElementById('statusChart'),{
+  type:'doughnut',
+  data:{labels:['Running','Pending','Failed/Other'],
+    datasets:[{data:[{{ running }},{{ pending }},{{ failed }}],
+      backgroundColor:['#008d4c','#cc8a00','#c62828'],borderWidth:0}]},
+  options:{plugins:{legend:{display:false}},cutout:'62%'}
+});
+</script>
+{% endblock %}
