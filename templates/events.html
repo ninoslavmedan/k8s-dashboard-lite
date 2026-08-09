@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1><i class="fa-solid fa-bell"></i> Events <span class="chip">ns: {{ selected_ns }}</span></h1>
+{% if not events %}
+<div class="table-card"><div class="empty">No recent events in <strong>{{ selected_ns }}</strong>.</div></div>
+{% else %}
+<div class="table-card">
+<table class="sortable">
+<thead><tr><th>Type</th><th>Reason</th><th>Object</th><th>Message</th><th>Count</th><th>Age</th></tr></thead>
+<tbody>
+{% for e in events %}
+<tr>
+<td>{% if e.type == "Warning" %}<span class="badge fail">Warning</span>{% else %}<span class="badge run">Normal</span>{% endif %}</td>
+<td><strong>{{ e.reason }}</strong></td>
+<td class="mono">{{ e.object }}</td>
+<td class="msg">{{ e.message }}</td>
+<td>{{ e.count }}</td>
+<td>{{ e.age }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+<div class="legend"><span class="usg">Showing up to 200 most recent events, newest first.</span></div>
+</div>
+{% endif %}
+{% endblock %}

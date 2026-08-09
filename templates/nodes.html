@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h1><i class="fa-solid fa-server"></i> Nodes</h1>
+{% if not nodes %}<div class="table-card"><div class="empty">No nodes found.</div></div>{% else %}
+<div class="table-card">
+<table class="sortable">
+<thead><tr>
+<th>Name</th><th>Status</th><th>Roles</th><th>CPU usage</th><th>Memory usage</th>
+<th>Kubelet</th><th>Internal IP</th><th>OS</th><th>Age</th><th></th>
+</tr></thead>
+<tbody>
+{% for n in nodes %}
+<tr>
+<td><strong>{{ n.name }}</strong></td>
+<td>{% if n.ready %}<span class="badge run">Ready</span>{% else %}<span class="badge fail">NotReady</span>{% endif %}</td>
+<td>{{ n.roles }}</td>
+<td>
+  <div class="bar {% if n.cpu_pct >= 80 %}hi{% endif %}"><span style="width:{{ n.cpu_pct }}%"></span></div>
+  <span class="usg">{{ n.cpu_usage }}{% if n.cpu_pct %} ({{ n.cpu_pct }}%){% endif %}</span>
+</td>
+<td>
+  <div class="bar {% if n.mem_pct >= 80 %}hi{% endif %}"><span style="width:{{ n.mem_pct }}%"></span></div>
+  <span class="usg">{{ n.mem_usage }}{% if n.mem_pct %} ({{ n.mem_pct }}%){% endif %}</span>
+</td>
+<td class="mono">{{ n.version }}</td>
+<td class="mono">{{ n.internal_ip }}</td>
+<td class="mono">{{ n.os }}</td>
+<td>{{ n.age }}</td>
+<td><a class="btn ghost" href="/yaml/node/-/{{ n.name }}" target="_blank"><i class="fa-solid fa-code"></i> YAML</a></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endif %}
+{% endblock %}

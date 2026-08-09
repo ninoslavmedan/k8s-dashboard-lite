@@ -54,6 +54,12 @@ tr:hover td{background:#fafcfe}
 .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:13px}
 .legend span{display:flex;align-items:center;gap:6px}
 .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+.bar{background:#eef3f7;border-radius:6px;height:16px;width:140px;overflow:hidden;display:inline-block;vertical-align:middle}
+.bar>span{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+.bar.hi>span{background:linear-gradient(90deg,#f0a500,var(--fail))}
+.usg{font-size:12px;color:var(--muted);margin-left:8px}
+.evt-normal{color:var(--ok)} .evt-warning{color:var(--fail);font-weight:600}
+.msg{max-width:520px;white-space:normal;color:var(--text)}
 </style>
 </head>
 <body>
@@ -64,6 +70,9 @@ tr:hover td{background:#fafcfe}
 <a href="/pods?ns={{ selected_ns }}"><i class="fa-solid fa-cube"></i> Pods</a>
 <a href="/deployments?ns={{ selected_ns }}"><i class="fa-solid fa-rocket"></i> Deployments</a>
 <a href="/services?ns={{ selected_ns }}"><i class="fa-solid fa-network-wired"></i> Services</a>
+<a href="/nodes?ns={{ selected_ns }}"><i class="fa-solid fa-server"></i> Nodes</a>
+<a href="/metrics-view?ns={{ selected_ns }}"><i class="fa-solid fa-gauge-high"></i> Metrics</a>
+<a href="/events?ns={{ selected_ns }}"><i class="fa-solid fa-bell"></i> Events</a>
 </div>
 </div>
 <div class="content">

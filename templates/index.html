@@ -4,6 +4,7 @@
   <div class='card'><div class='card-icon'><i class='fa-solid fa-cube'></i></div><div class='metric'>{{ pods }}</div><div class='label'>Pods</div></div>
   <div class='card'><div class='card-icon'><i class='fa-solid fa-rocket'></i></div><div class='metric'>{{ deployments }}</div><div class='label'>Deployments</div></div>
   <div class='card'><div class='card-icon'><i class='fa-solid fa-network-wired'></i></div><div class='metric'>{{ services }}</div><div class='label'>Services</div></div>
+  <div class='card'><div class='card-icon'><i class='fa-solid fa-server'></i></div><div class='metric'>{{ nodes }}</div><div class='label'>Nodes</div></div>
   <div class='card {% if restarts>0 %}warn{% endif %}'><div class='card-icon'><i class='fa-solid fa-rotate-right'></i></div><div class='metric'>{{ restarts }}</div><div class='label'>Total Restarts</div></div>
 </div>
 <div class='grid2'>

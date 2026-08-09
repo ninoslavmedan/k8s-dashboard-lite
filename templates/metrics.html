@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h1><i class="fa-solid fa-gauge-high"></i> Pod Metrics <span class="chip">ns: {{ selected_ns }}</span></h1>
+{% if error %}{% else %}{% endif %}
+{% if not metrics %}
+<div class="table-card"><div class="empty">
+No pod metrics available for <strong>{{ selected_ns }}</strong>.
+{% if error %}<br><span class="mono">{{ error }}</span>{% endif %}
+</div></div>
+{% else %}
+<div class="table-card">
+<table class="sortable">
+<thead><tr><th>Pod</th><th>Containers</th><th>CPU</th><th>CPU load</th><th>Memory</th><th>Mem load</th></tr></thead>
+<tbody>
+{% for m in metrics %}
+<tr>
+<td><strong>{{ m.name }}</strong></td>
+<td>{{ m.containers }}</td>
+<td class="mono">{{ m.cpu }}</td>
+<td><div class="bar {% if m.cpu_bar >= 80 %}hi{% endif %}"><span style="width:{{ m.cpu_bar }}%"></span></div></td>
+<td class="mono">{{ m.mem }}</td>
+<td><div class="bar {% if m.mem_bar >= 80 %}hi{% endif %}"><span style="width:{{ m.mem_bar }}%"></span></div></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+<div class="legend"><span class="usg">Bars are relative to the busiest pod in this namespace. Sorted by CPU (desc).</span></div>
+</div>
+{% endif %}
+{% endblock %}

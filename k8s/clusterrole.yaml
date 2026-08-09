@@ -6,7 +6,7 @@ rules:
 - apiGroups: [""]
   resources:
     - pods
-    - pods/log   # 🔥 THIS IS MISSING
+    - pods/log
     - services
     - namespaces
     - nodes
@@ -24,3 +24,12 @@ rules:
     - get
     - list
     - watch
+
+# Metrics view (Nodes + Pod Metrics pages) - metrics-server API
+- apiGroups: ["metrics.k8s.io"]
+  resources:
+    - pods
+    - nodes
+  verbs:
+    - get
+    - list

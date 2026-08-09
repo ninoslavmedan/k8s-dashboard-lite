@@ -7,7 +7,7 @@ import yaml
 app = Flask(__name__)
 
 APP_NAME = "k8s-dashboard-lite"
-VERSION = "v5.0.0"
+VERSION = "v6.0.0"
 
 try:
     config.load_incluster_config()
@@ -16,6 +16,7 @@ except Exception:
 
 v1 = client.CoreV1Api()
 apps = client.AppsV1Api()
+custom = client.CustomObjectsApi()  # for metrics.k8s.io
 
 
 # ---------- helpers ----------
@@ -52,22 +53,6 @@ def age_of(ts):
     return f"{s // 86400}d"
 
 
-def pod_summary(p):
-    cs = p.status.container_statuses or []
-    ready = sum(1 for c in cs if c.ready)
-    total = len(cs) if cs else len(p.spec.containers or [])
-    restarts = sum(c.restart_count for c in cs) if cs else 0
-    return {
-        "name": p.metadata.name,
-        "phase": p.status.phase or "Unknown",
-        "ready": f"{ready}/{total}",
-        "restarts": restarts,
-        "node": p.spec.node_name or "-",
-        "ip": p.status.pod_ip or "-",
-        "age": age_of(p.metadata.creation_timestamp),
-    }
-
-
 def with_error(fn, default):
     try:
         return fn(), None
@@ -77,7 +62,57 @@ def with_error(fn, default):
         return default, str(e)
 
 
-# ---------- routes ----------
+# ----- metrics parsing (metrics-server returns cpu in n/u/m cores, mem in Ki/Mi/Gi) -----
+def cpu_to_millicores(v):
+    """Normalize a metrics-server cpu string to integer millicores."""
+    if v is None:
+        return 0
+    v = str(v)
+    try:
+        if v.endswith("n"):      # nanocores
+            return int(int(v[:-1]) / 1_000_000)
+        if v.endswith("u"):      # microcores
+            return int(int(v[:-1]) / 1_000)
+        if v.endswith("m"):      # millicores
+            return int(v[:-1])
+        return int(float(v) * 1000)  # whole cores
+    except ValueError:
+        return 0
+
+
+def mem_to_mib(v):
+    """Normalize a metrics-server / capacity memory string to integer MiB."""
+    if v is None:
+        return 0
+    v = str(v)
+    units = {"Ki": 1 / 1024, "Mi": 1, "Gi": 1024, "Ti": 1024 * 1024,
+             "K": 1000 / (1024 * 1024), "M": 1000 * 1000 / (1024 * 1024),
+             "G": 1000 ** 3 / (1024 * 1024)}
+    for u, factor in units.items():
+        if v.endswith(u):
+            try:
+                return int(float(v[: -len(u)]) * factor)
+            except ValueError:
+                return 0
+    try:
+        return int(int(v) / (1024 * 1024))  # bytes
+    except ValueError:
+        return 0
+
+
+def fmt_mem(mib):
+    if mib >= 1024:
+        return f"{mib / 1024:.1f} Gi"
+    return f"{mib} Mi"
+
+
+def fmt_cpu(m):
+    if m >= 1000:
+        return f"{m / 1000:.2f} cores"
+    return f"{m}m"
+
+
+# ---------- existing routes ----------
 @app.route("/")
 def index():
     ns = request.args.get("ns", "default")
@@ -91,12 +126,13 @@ def index():
     total_restarts = sum(
         sum(c.restart_count for c in (p.status.container_statuses or [])) for p in pods
     )
+    nodes, _ = with_error(lambda: v1.list_node().items, [])
 
     return render_template(
         "index.html",
         pods=len(pods), deployments=len(deps), services=len(svcs),
         running=running, pending=pending, failed=failed, restarts=total_restarts,
-        error=e1 or e2 or e3, **base_context(),
+        nodes=len(nodes), error=e1 or e2 or e3, **base_context(),
     )
 
 
@@ -107,7 +143,20 @@ def pods():
     items, err = with_error(lambda: v1.list_namespaced_pod(ns).items, [])
     if search:
         items = [p for p in items if search.lower() in p.metadata.name.lower()]
-    rows = [pod_summary(p) for p in items]
+    rows = []
+    for p in items:
+        cs = p.status.container_statuses or []
+        ready = sum(1 for c in cs if c.ready)
+        total = len(cs) if cs else len(p.spec.containers or [])
+        rows.append({
+            "name": p.metadata.name,
+            "phase": p.status.phase or "Unknown",
+            "ready": f"{ready}/{total}",
+            "restarts": sum(c.restart_count for c in cs) if cs else 0,
+            "node": p.spec.node_name or "-",
+            "ip": p.status.pod_ip or "-",
+            "age": age_of(p.metadata.creation_timestamp),
+        })
     return render_template("pods.html", pods=rows, search=search, error=err, **base_context())
 
 
@@ -154,6 +203,116 @@ def services():
     return render_template("services.html", services=rows, error=err, **base_context())
 
 
+# ---------- NEW: Nodes ----------
+@app.route("/nodes")
+def nodes():
+    items, err = with_error(lambda: v1.list_node().items, [])
+
+    # node usage from metrics-server (graceful fallback if unavailable)
+    usage = {}
+    try:
+        m = custom.list_cluster_custom_object("metrics.k8s.io", "v1beta1", "nodes")
+        for it in m.get("items", []):
+            usage[it["metadata"]["name"]] = {
+                "cpu_m": cpu_to_millicores(it["usage"]["cpu"]),
+                "mem_mib": mem_to_mib(it["usage"]["memory"]),
+            }
+    except Exception:  # noqa: BLE001
+        pass
+
+    rows = []
+    for n in items:
+        name = n.metadata.name
+        conds = {c.type: c.status for c in (n.status.conditions or [])}
+        ready = conds.get("Ready") == "True"
+        roles = [k.split("/")[1] for k in (n.metadata.labels or {})
+                 if k.startswith("node-role.kubernetes.io/")] or ["worker"]
+        cap = n.status.capacity or {}
+        cpu_cap_m = cpu_to_millicores(cap.get("cpu", "0")) if not str(cap.get("cpu", "")).isdigit() else int(cap.get("cpu", 0)) * 1000
+        mem_cap_mib = mem_to_mib(cap.get("memory", "0"))
+        u = usage.get(name, {})
+        cpu_u = u.get("cpu_m", 0)
+        mem_u = u.get("mem_mib", 0)
+        rows.append({
+            "name": name,
+            "ready": ready,
+            "roles": ", ".join(roles),
+            "version": n.status.node_info.kubelet_version if n.status.node_info else "-",
+            "os": (n.status.node_info.os_image if n.status.node_info else "-"),
+            "internal_ip": next((a.address for a in (n.status.addresses or [])
+                                 if a.type == "InternalIP"), "-"),
+            "cpu_usage": fmt_cpu(cpu_u) if cpu_u else "-",
+            "cpu_pct": int(cpu_u / cpu_cap_m * 100) if cpu_cap_m else 0,
+            "mem_usage": fmt_mem(mem_u) if mem_u else "-",
+            "mem_pct": int(mem_u / mem_cap_mib * 100) if mem_cap_mib else 0,
+            "age": age_of(n.metadata.creation_timestamp),
+        })
+    return render_template("nodes.html", nodes=rows, error=err, **base_context())
+
+
+# ---------- NEW: Metrics (pod CPU/mem) ----------
+@app.route("/metrics-view")
+def metrics_view():
+    ns = request.args.get("ns", "default")
+    rows = []
+    err = None
+    try:
+        m = custom.list_namespaced_custom_object(
+            "metrics.k8s.io", "v1beta1", ns, "pods"
+        )
+        for it in m.get("items", []):
+            cpu = sum(cpu_to_millicores(c["usage"]["cpu"]) for c in it.get("containers", []))
+            mem = sum(mem_to_mib(c["usage"]["memory"]) for c in it.get("containers", []))
+            rows.append({
+                "name": it["metadata"]["name"],
+                "cpu_m": cpu,
+                "cpu": fmt_cpu(cpu),
+                "mem_mib": mem,
+                "mem": fmt_mem(mem),
+                "containers": len(it.get("containers", [])),
+            })
+        rows.sort(key=lambda r: r["cpu_m"], reverse=True)
+    except ApiException as e:
+        err = f"{e.status} {e.reason} (metrics-server available?)"
+    except Exception as e:  # noqa: BLE001
+        err = f"{e} (metrics-server available?)"
+
+    max_cpu = max((r["cpu_m"] for r in rows), default=1) or 1
+    max_mem = max((r["mem_mib"] for r in rows), default=1) or 1
+    for r in rows:
+        r["cpu_bar"] = int(r["cpu_m"] / max_cpu * 100)
+        r["mem_bar"] = int(r["mem_mib"] / max_mem * 100)
+    return render_template("metrics.html", metrics=rows, error=err, **base_context())
+
+
+# ---------- NEW: Events ----------
+@app.route("/events")
+def events():
+    ns = request.args.get("ns", "default")
+    items, err = with_error(
+        lambda: v1.list_namespaced_event(ns).items, []
+    )
+    # newest first
+    def keyfn(e):
+        return e.last_timestamp or e.event_time or e.metadata.creation_timestamp
+    try:
+        items = sorted(items, key=keyfn, reverse=True)
+    except Exception:  # noqa: BLE001
+        pass
+    rows = []
+    for e in items[:200]:
+        rows.append({
+            "type": e.type or "Normal",
+            "reason": e.reason or "-",
+            "object": f"{e.involved_object.kind}/{e.involved_object.name}"
+                      if e.involved_object else "-",
+            "message": (e.message or "").strip(),
+            "count": e.count or 1,
+            "age": age_of(e.last_timestamp or e.metadata.creation_timestamp),
+        })
+    return render_template("events.html", events=rows, error=err, **base_context())
+
+
 @app.route("/yaml/<kind>/<ns>/<name>")
 def yaml_view(kind, ns, name):
     try:
@@ -163,6 +322,8 @@ def yaml_view(kind, ns, name):
             obj = apps.read_namespaced_deployment(name, ns)
         elif kind == "service":
             obj = v1.read_namespaced_service(name, ns)
+        elif kind == "node":
+            obj = v1.read_node(name)
         else:
             return "Unsupported kind", 400
     except ApiException as e:
