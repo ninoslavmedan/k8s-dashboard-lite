@@ -19,3 +19,10 @@ spec:
         image: ghcr.io/ninoslavmedan/k8s-dashboard-lite:v7.0.0
         ports:
         - containerPort: 8080
+        resources:              # ← replace the empty `resources: {}` here
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"         # ← low ceiling so it's easy to saturate for the test
+              memory: "128Mi"
