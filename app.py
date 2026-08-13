@@ -3,13 +3,11 @@ from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 from datetime import datetime, timezone
 import yaml
-import shlex
-import subprocess
 
 app = Flask(__name__)
 
 APP_NAME = "k8s-dashboard-lite"
-VERSION = "v7.0.0"
+VERSION = "v6.0.0"
 
 try:
     config.load_incluster_config()
@@ -344,70 +342,6 @@ def logs(ns, pod):
         except Exception as e:  # noqa: BLE001
             yield f"ERROR: {e}"
     return Response(stream(), mimetype="text/plain")
-
-
-
-# ---------- NEW: kubectl terminal (command runner) ----------
-# Safety: only `kubectl` is allowed, arguments are shell-split (no shell=True),
-# and a set of destructive verbs is blocked by default.
-BLOCKED_VERBS = {
-    "delete", "drain", "cordon", "uncordon", "taint", "edit",
-    "replace", "apply", "patch", "scale", "annotate", "label",
-    "create", "exec", "attach", "cp", "run", "expose", "set",
-    "rollout",  # rollout can restart/undo; block by default
-}
-KUBECTL_TIMEOUT = 20  # seconds
-
-
-@app.route("/terminal")
-def terminal():
-    return render_template("terminal.html", no_refresh=True, **base_context())
-
-
-@app.route("/run", methods=["POST"])
-def run_kubectl():
-    raw = (request.form.get("cmd") or request.json.get("cmd") if request.is_json
-           else request.form.get("cmd") or "").strip()
-    if not raw:
-        return Response("(empty command)", mimetype="text/plain")
-
-    # tokenize safely (no shell interpretation)
-    try:
-        parts = shlex.split(raw)
-    except ValueError as e:
-        return Response(f"parse error: {e}", mimetype="text/plain", status=400)
-
-    # strip a leading "kubectl" if the user typed it
-    if parts and parts[0] == "kubectl":
-        parts = parts[1:]
-    if not parts:
-        return Response("(no kubectl subcommand)", mimetype="text/plain")
-
-    verb = parts[0].lower()
-    if verb in BLOCKED_VERBS:
-        return Response(
-            f"blocked: '{verb}' is disabled in this read-only terminal.\n"
-            f"Allowed: get, describe, logs, top, explain, api-resources, version, config, cluster-info, etc.",
-            mimetype="text/plain", status=403,
-        )
-
-    cmd = ["kubectl"] + parts
-    try:
-        out = subprocess.run(
-            cmd, capture_output=True, text=True, timeout=KUBECTL_TIMEOUT
-        )
-        body = out.stdout
-        if out.stderr:
-            body += ("\n" if body else "") + out.stderr
-        if not body:
-            body = f"(exit {out.returncode}, no output)"
-        return Response(body, mimetype="text/plain", status=200)
-    except subprocess.TimeoutExpired:
-        return Response(f"timeout after {KUBECTL_TIMEOUT}s", mimetype="text/plain", status=504)
-    except FileNotFoundError:
-        return Response("kubectl not found in container", mimetype="text/plain", status=500)
-    except Exception as e:  # noqa: BLE001
-        return Response(f"error: {e}", mimetype="text/plain", status=500)
 
 
 @app.route("/health")

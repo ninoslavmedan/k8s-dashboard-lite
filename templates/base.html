@@ -73,7 +73,6 @@ tr:hover td{background:#fafcfe}
 <a href="/nodes?ns={{ selected_ns }}"><i class="fa-solid fa-server"></i> Nodes</a>
 <a href="/metrics-view?ns={{ selected_ns }}"><i class="fa-solid fa-gauge-high"></i> Metrics</a>
 <a href="/events?ns={{ selected_ns }}"><i class="fa-solid fa-bell"></i> Events</a>
-<a href="/terminal"><i class="fa-solid fa-terminal"></i> Terminal</a>
 </div>
 </div>
 <div class="content">
@@ -84,7 +83,7 @@ tr:hover td{background:#fafcfe}
 {% for n in namespaces %}<option value="{{ n }}" {% if n==selected_ns %}selected{% endif %}>{{ n }}</option>{% endfor %}
 </select>
 </form>
-{% if not no_refresh %}<span class="chip"><i class="fa-regular fa-clock"></i> auto-refresh 15s</span>{% else %}<span class="chip"><i class="fa-solid fa-terminal"></i> read-only kubectl</span>{% endif %}
+<span class="chip"><i class="fa-regular fa-clock"></i> auto-refresh 15s</span>
 </div>
 {% if error %}<div class="err"><i class="fa-solid fa-triangle-exclamation"></i> Cluster API error: {{ error }}</div>{% endif %}
 {% block content %}{% endblock %}
@@ -106,8 +105,8 @@ document.querySelectorAll('table.sortable').forEach(function(t){
     });
   });
 });
-// auto-refresh (disabled on pages that set no_refresh, e.g. the terminal)
-{% if not no_refresh %}setTimeout(function(){location.reload();}, 15000);{% endif %}
+// auto-refresh (pause when a log window is open elsewhere is out of scope)
+setTimeout(function(){location.reload();}, 15000);
 </script>
 </body>
 </html>
