@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+<h1><i class="fa-solid fa-terminal"></i> kubectl Terminal</h1>
+
+<div class="err" style="background:var(--warnbg);color:var(--warn)">
+  <i class="fa-solid fa-shield-halved"></i>
+  Read-only mode: only <code>kubectl</code> is allowed. Destructive verbs
+  (delete, apply, patch, scale, exec, edit, rollout&hellip;) are blocked. Commands time out after 20s.
+</div>
+
+<div class="panel" style="margin-bottom:18px">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+    <button class="btn ghost qbtn" data-cmd="get pods -A">get pods -A</button>
+    <button class="btn ghost qbtn" data-cmd="get nodes -o wide">get nodes -o wide</button>
+    <button class="btn ghost qbtn" data-cmd="get deploy -A">get deploy -A</button>
+    <button class="btn ghost qbtn" data-cmd="top pods -A">top pods -A</button>
+    <button class="btn ghost qbtn" data-cmd="get events -A --sort-by=.lastTimestamp">recent events</button>
+    <button class="btn ghost qbtn" data-cmd="version">version</button>
+  </div>
+  <form id="tform" style="display:flex;gap:10px;align-items:center">
+    <span class="mono" style="color:var(--accent);font-weight:700">$ kubectl</span>
+    <input id="cmd" name="cmd" autocomplete="off" spellcheck="false"
+           placeholder="get pods -n kube-system"
+           style="flex:1;padding:11px 14px;border:1px solid var(--border);border-radius:8px;font-family:'Consolas',monospace;font-size:14px">
+    <button class="btn" type="submit"><i class="fa-solid fa-play"></i> Run</button>
+    <button class="btn ghost" type="button" id="clr"><i class="fa-solid fa-eraser"></i> Clear</button>
+  </form>
+</div>
+
+<div class="table-card" style="padding:0">
+  <pre id="out" style="margin:0;padding:18px;background:#0f2430;color:#d7e6ef;border-radius:12px;
+       font-family:'Consolas',monospace;font-size:13px;line-height:1.5;min-height:320px;
+       max-height:60vh;overflow:auto;white-space:pre-wrap;word-break:break-word">Ready. Type a kubectl command above and press Run.
+</pre>
+</div>
+
+<script>
+var out = document.getElementById('out');
+var cmd = document.getElementById('cmd');
+var hist = []; var hi = -1;
+
+function append(prefix, text, color){
+  var stamp = new Date().toLocaleTimeString();
+  out.innerHTML += '\n<span style="color:#5fd0e6">['+stamp+'] $ kubectl '+prefix.replace(/</g,'&lt;')+'</span>\n';
+  var span = document.createElement('span');
+  if(color) span.style.color = color;
+  span.textContent = text;
+  out.appendChild(span);
+  out.innerHTML += '\n';
+  out.scrollTop = out.scrollHeight;
+}
+
+function run(c){
+  if(!c.trim()) return;
+  hist.push(c); hi = hist.length;
+  var fd = new FormData(); fd.append('cmd', c);
+  append(c, 'running\u2026', '#8aa');
+  fetch('/run', {method:'POST', body:fd})
+    .then(function(r){ return r.text().then(function(t){ return {t:t, ok:r.ok, status:r.status}; }); })
+    .then(function(res){
+      // remove the "running..." line we just added
+      out.lastChild.previousSibling && null;
+      var color = res.ok ? '#d7e6ef' : '#ff9c9c';
+      // replace the running placeholder: simplest is to just append the real result
+      append(c, res.t, color);
+    })
+    .catch(function(e){ append(c, 'network error: '+e, '#ff9c9c'); });
+}
+
+document.getElementById('tform').addEventListener('submit', function(e){
+  e.preventDefault(); run(cmd.value); cmd.value=''; cmd.focus();
+});
+document.getElementById('clr').addEventListener('click', function(){
+  out.textContent = 'Cleared.\n';
+});
+document.querySelectorAll('.qbtn').forEach(function(b){
+  b.addEventListener('click', function(){ cmd.value = b.dataset.cmd; run(b.dataset.cmd); cmd.value=''; cmd.focus(); });
+});
+// command history with up/down arrows
+cmd.addEventListener('keydown', function(e){
+  if(e.key==='ArrowUp'){ if(hi>0){hi--; cmd.value=hist[hi];} e.preventDefault(); }
+  else if(e.key==='ArrowDown'){ if(hi<hist.length-1){hi++; cmd.value=hist[hi];} else {hi=hist.length; cmd.value='';} e.preventDefault(); }
+});
+cmd.focus();
+</script>
+{% endblock %}
